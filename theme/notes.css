@@ -1,0 +1,39 @@
+/* @theme notes */
+/* Document-style theme used to render presenter guides, activities,
+   the setup guide and the final-project brief into readable PDFs. */
+
+@import 'default';
+
+section {
+  font-family: Georgia, "Times New Roman", Cambria, serif;
+  font-size: 21px;
+  line-height: 1.5;
+  color: #1F2937;
+  background: #fff;
+  padding: 54px 64px;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+h1 { font-size: 1.7em; color: #4338CA; margin-bottom: .2em; }
+h2 { font-size: 1.25em; color: #111827; border-bottom: 2px solid #C7D2FE; padding-bottom: .1em; margin-top: .4em; }
+h3 { font-size: 1.05em; color: #4338CA; }
+h4 { font-size: .98em; color: #B45309; text-transform: uppercase; letter-spacing: .03em; }
+
+strong { color: #4338CA; }
+a { color: #0E7490; }
+
+code { font-family: Menlo, Consolas, monospace; background: #F3F4F6; padding: .05em .3em; border-radius: 4px; font-size: .85em; color: #BE185D; }
+pre { background: #0B1021; color: #E2E8F0; padding: 16px 18px; border-radius: 10px; font-size: .7em; line-height: 1.4; }
+pre code { background: transparent; color: #E2E8F0; padding: 0; }
+
+blockquote { border-left: 5px solid #F59E0B; background: #FFFBEB; padding: .3em 1em; color: #92400E; border-radius: 0 8px 8px 0; }
+
+ul, ol { margin: .2em 0 .2em .4em; }
+li { margin: .2em 0; }
+
+table { border-collapse: collapse; font-size: .8em; width: 100%; }
+th { background: #EEF2FF; }
+th, td { border: 1px solid #E5E7EB; padding: .35em .6em; text-align: left; }
+
+section::after { color: #9CA3AF; font-size: 13px; }

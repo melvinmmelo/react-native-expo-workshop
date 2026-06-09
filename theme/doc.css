@@ -1,0 +1,49 @@
+/* Document stylesheet for flowing (multi-page) handout PDFs:
+   presenter guides, activities, the setup guide and the final-project brief.
+   Used by build-pdfs.sh via: Markdown -> HTML -> Google Chrome print-to-pdf. */
+
+@page { margin: 18mm 16mm; }
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+               "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  color: #1F2937;
+  line-height: 1.55;
+  font-size: 12pt;
+  margin: 0;
+}
+
+h1 { color: #4338CA; font-size: 22pt; margin: 0 0 .35em; border-bottom: 3px solid #06B6D4; padding-bottom: .2em; }
+h2 { color: #0F172A; font-size: 16pt; margin: 1.1em 0 .3em; border-bottom: 1px solid #C7D2FE; padding-bottom: .15em; }
+h3 { color: #4338CA; font-size: 13pt; margin: .9em 0 .25em; }
+h4 { color: #B45309; font-size: 11pt; text-transform: uppercase; letter-spacing: .04em; margin: .8em 0 .2em; }
+h1, h2, h3, h4 { page-break-after: avoid; }
+
+p, li { font-size: 12pt; }
+a { color: #0E7490; text-decoration: none; }
+strong { color: #4338CA; }
+
+code {
+  font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  background: #F1F5F9; color: #BE185D; padding: .08em .35em; border-radius: 4px; font-size: .88em;
+}
+pre {
+  background: #0B1021; color: #E2E8F0; padding: 14px 16px; border-radius: 10px;
+  overflow: auto; font-size: 9.5pt; line-height: 1.45; page-break-inside: avoid;
+}
+pre code { background: transparent; color: #E2E8F0; padding: 0; font-size: inherit; }
+
+blockquote {
+  border-left: 4px solid #F59E0B; background: #FFFBEB; margin: .6em 0; padding: .4em 1em;
+  color: #92400E; border-radius: 0 8px 8px 0;
+}
+
+table { border-collapse: collapse; width: 100%; margin: .6em 0; font-size: 10.5pt; page-break-inside: avoid; }
+th { background: #EEF2FF; color: #1E1B4B; }
+th, td { border: 1px solid #E5E7EB; padding: .4em .6em; text-align: left; vertical-align: top; }
+
+hr { border: none; border-top: 2px solid #E5E7EB; margin: 1.4em 0; }
+ul, ol { padding-left: 1.3em; }
+img { max-width: 100%; }
