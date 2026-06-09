@@ -1,117 +1,146 @@
 import { StatusBar } from 'expo-status-bar';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-// SESSION 1 — "Hello, Mobile World"
-// A static profile card. Practice: components, View/Text/Image, StyleSheet, Flexbox.
-// Make it yours: change the name, photo, bio, and info rows.
+// SESSION 2 — "Make It Interactive"
+// An in-memory To-Do list. Practice: useState, onPress, TextInput,
+// arrays in state (spread/filter/map), FlatList, and a child component with props.
+// NOTE: tasks live in memory only — they reset when the app restarts.
+//       Session 3 fixes that with a real SQLite database.
+
+function TodoItem({ task, onToggle, onDelete }) {
+  return (
+    <View style={styles.item}>
+      <TouchableOpacity style={styles.itemLeft} onPress={onToggle}>
+        <Text style={styles.checkbox}>{task.done ? '✅' : '⬜️'}</Text>
+        <Text style={styles.itemText}>{task.title}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onDelete} hitSlop={10}>
+        <Text style={styles.delete}>🗑️</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function App() {
+  const [text, setText] = useState('');
+  const [tasks, setTasks] = useState([
+    { id: 1, title: 'Welcome to your To-Do app 👋', done: false },
+    { id: 2, title: 'Tap a task to mark it done', done: false },
+  ]);
+
+  function addTask() {
+    const title = text.trim();
+    if (title === '') return; // ignore empty input
+    const newTask = { id: Date.now(), title, done: false };
+    setTasks([newTask, ...tasks]); // new array, new task on top
+    setText(''); // clear the box
+  }
+
+  function toggleTask(id) {
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  }
+
+  function deleteTask(id) {
+    setTasks(tasks.filter((t) => t.id !== id));
+  }
+
+  const remaining = tasks.filter((t) => !t.done).length;
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
       <StatusBar style="light" />
 
-      <View style={styles.card}>
-        <Image
-          style={styles.avatar}
-          source={{ uri: 'https://i.pravatar.cc/300?img=12' }}
-        />
-
-        <Text style={styles.name}>Juan dela Cruz</Text>
-        <Text style={styles.role}>Future Mobile Developer</Text>
-
-        <View style={styles.bioBox}>
-          <Text style={styles.bioText}>
-            👋 Hi! I'm learning to build mobile apps with React Native & Expo.
-            This entire screen is my very first app — made on my own phone!
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>📍 Location</Text>
-          <Text style={styles.infoValue}>Batangas City, PH</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>🎓 School</Text>
-          <Text style={styles.infoValue}>University of Batangas</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>💡 Learning</Text>
-          <Text style={styles.infoValue}>React Native + Expo</Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>My Tasks</Text>
+        <Text style={styles.subtitle}>{remaining} left to do</Text>
       </View>
-    </ScrollView>
+
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          placeholder="Add a task..."
+          placeholderTextColor="#94A3B8"
+          value={text}
+          onChangeText={setText}
+          onSubmitEditing={addTask}
+          returnKeyType="done"
+        />
+        <TouchableOpacity style={styles.addBtn} onPress={addTask}>
+          <Text style={styles.addBtnText}>＋</Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No tasks yet. Add one above! ✨</Text>
+        }
+        renderItem={({ item }) => (
+          <TodoItem
+            task={item}
+            onToggle={() => toggleTask(item.id)}
+            onDelete={() => deleteTask(item.id)}
+          />
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#4338CA',
-  },
-  content: {
-    padding: 20,
-    paddingTop: 80,
-    alignItems: 'center',
-  },
-  card: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
-    alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#06B6D4',
-    marginBottom: 12,
-  },
-  name: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#0F172A',
-  },
-  role: {
-    fontSize: 16,
-    color: '#06B6D4',
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  bioBox: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-  },
-  bioText: {
-    fontSize: 15,
-    color: '#475569',
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  infoRow: {
+  screen: { flex: 1, backgroundColor: '#F1F5F9', paddingTop: 60 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
+  title: { fontSize: 32, fontWeight: 'bold', color: '#0F172A' },
+  subtitle: { fontSize: 15, color: '#64748B', marginTop: 2 },
+  inputRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    gap: 10,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-  },
-  infoLabel: {
-    fontSize: 15,
-    color: '#64748B',
-    fontWeight: '600',
-  },
-  infoValue: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#0F172A',
-    fontWeight: '600',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
+  addBtn: {
+    width: 48,
+    backgroundColor: '#4338CA',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addBtnText: { color: '#FFFFFF', fontSize: 28, fontWeight: '600', lineHeight: 30 },
+  list: { paddingHorizontal: 20, paddingBottom: 40 },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 10,
+  },
+  itemLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
+  checkbox: { fontSize: 20 },
+  itemText: { fontSize: 16, color: '#0F172A', flexShrink: 1 },
+  // Used in the Session 2 stretch goal (strike-through completed tasks):
+  itemTextDone: { textDecorationLine: 'line-through', color: '#94A3B8' },
+  delete: { fontSize: 20, paddingLeft: 12 },
+  empty: { textAlign: 'center', color: '#94A3B8', marginTop: 40, fontSize: 16 },
 });
