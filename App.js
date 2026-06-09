@@ -1,55 +1,98 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Alert,
   FlatList,
+  Modal,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as DB from './db';
 
-// SESSION 2 — "Make It Interactive"
-// An in-memory To-Do list. Practice: useState, onPress, TextInput,
-// arrays in state (spread/filter/map), FlatList, and a child component with props.
-// NOTE: tasks live in memory only — they reset when the app restarts.
-//       Session 3 fixes that with a real SQLite database.
+// SESSION 3 — "Save It For Real"
+// A persistent CRUD app backed by on-device SQLite (see db.js).
+// Practice: useEffect, the change->refresh pattern, full CRUD, a Modal
+// "second screen" for add/edit, and Alert confirm-before-delete.
 
-function TodoItem({ task, onToggle, onDelete }) {
+function TaskRow({ task, onToggle, onEdit, onDelete }) {
   return (
     <View style={styles.item}>
       <TouchableOpacity style={styles.itemLeft} onPress={onToggle}>
         <Text style={styles.checkbox}>{task.done ? '✅' : '⬜️'}</Text>
-        <Text style={styles.itemText}>{task.title}</Text>
+        <Text style={[styles.itemText, task.done && styles.itemTextDone]}>
+          {task.title}
+        </Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onDelete} hitSlop={10}>
-        <Text style={styles.delete}>🗑️</Text>
+      <TouchableOpacity onPress={onEdit} hitSlop={8}>
+        <Text style={styles.action}>✏️</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onDelete} hitSlop={8}>
+        <Text style={styles.action}>🗑️</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 export default function App() {
-  const [text, setText] = useState('');
-  const [tasks, setTasks] = useState([
-    { id: 1, title: 'Welcome to your To-Do app 👋', done: false },
-    { id: 2, title: 'Tap a task to mark it done', done: false },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [editingId, setEditingId] = useState(null); // null = adding, otherwise editing this id
 
-  function addTask() {
-    const title = text.trim();
-    if (title === '') return; // ignore empty input
-    const newTask = { id: Date.now(), title, done: false };
-    setTasks([newTask, ...tasks]); // new array, new task on top
-    setText(''); // clear the box
+  // run ONCE when the app starts: create the table, then load saved tasks
+  useEffect(() => {
+    DB.setupDatabase();
+    refresh();
+  }, []);
+
+  function refresh() {
+    setTasks(DB.getTasks()); // re-read the database into state
   }
 
-  function toggleTask(id) {
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  function openAdd() {
+    setEditingId(null);
+    setDraft('');
+    setModalVisible(true);
   }
 
-  function deleteTask(id) {
-    setTasks(tasks.filter((t) => t.id !== id));
+  function openEdit(task) {
+    setEditingId(task.id);
+    setDraft(task.title);
+    setModalVisible(true);
+  }
+
+  function save() {
+    const title = draft.trim();
+    if (title === '') return;
+    if (editingId === null) {
+      DB.addTask(title); // CREATE
+    } else {
+      DB.updateTask(editingId, title); // UPDATE
+    }
+    setModalVisible(false);
+    refresh();
+  }
+
+  function toggle(task) {
+    DB.toggleTask(task.id, !task.done); // UPDATE done
+    refresh();
+  }
+
+  function remove(task) {
+    Alert.alert('Delete task?', `"${task.title}"`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          DB.deleteTask(task.id); // DELETE
+          refresh();
+        },
+      },
+    ]);
   }
 
   const remaining = tasks.filter((t) => !t.done).length;
@@ -60,22 +103,7 @@ export default function App() {
 
       <View style={styles.header}>
         <Text style={styles.title}>My Tasks</Text>
-        <Text style={styles.subtitle}>{remaining} left to do</Text>
-      </View>
-
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          placeholder="Add a task..."
-          placeholderTextColor="#94A3B8"
-          value={text}
-          onChangeText={setText}
-          onSubmitEditing={addTask}
-          returnKeyType="done"
-        />
-        <TouchableOpacity style={styles.addBtn} onPress={addTask}>
-          <Text style={styles.addBtnText}>＋</Text>
-        </TouchableOpacity>
+        <Text style={styles.subtitle}>{remaining} left · saved on this device 💾</Text>
       </View>
 
       <FlatList
@@ -83,16 +111,55 @@ export default function App() {
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.empty}>No tasks yet. Add one above! ✨</Text>
+          <Text style={styles.empty}>No tasks yet. Tap ＋ to add one! ✨</Text>
         }
         renderItem={({ item }) => (
-          <TodoItem
+          <TaskRow
             task={item}
-            onToggle={() => toggleTask(item.id)}
-            onDelete={() => deleteTask(item.id)}
+            onToggle={() => toggle(item)}
+            onEdit={() => openEdit(item)}
+            onDelete={() => remove(item)}
           />
         )}
       />
+
+      <TouchableOpacity style={styles.fab} onPress={openAdd}>
+        <Text style={styles.fabText}>＋</Text>
+      </TouchableOpacity>
+
+      {/* The "second screen": a pop-up form used for BOTH add and edit */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              {editingId === null ? 'New Task' : 'Edit Task'}
+            </Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="What needs doing?"
+              placeholderTextColor="#94A3B8"
+              value={draft}
+              onChangeText={setDraft}
+              autoFocus
+              onSubmitEditing={save}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.cancelBtn]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.saveBtn]}
+                onPress={save}
+              >
+                <Text style={styles.saveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -101,33 +168,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F1F5F9', paddingTop: 60 },
   header: { paddingHorizontal: 20, paddingBottom: 12 },
   title: { fontSize: 32, fontWeight: 'bold', color: '#0F172A' },
-  subtitle: { fontSize: 15, color: '#64748B', marginTop: 2 },
-  inputRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#0F172A',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  addBtn: {
-    width: 48,
-    backgroundColor: '#4338CA',
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addBtnText: { color: '#FFFFFF', fontSize: 28, fontWeight: '600', lineHeight: 30 },
-  list: { paddingHorizontal: 20, paddingBottom: 40 },
+  subtitle: { fontSize: 14, color: '#64748B', marginTop: 2 },
+  list: { paddingHorizontal: 20, paddingBottom: 100 },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -135,12 +177,56 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 10,
+    gap: 8,
   },
   itemLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
   checkbox: { fontSize: 20 },
   itemText: { fontSize: 16, color: '#0F172A', flexShrink: 1 },
-  // Used in the Session 2 stretch goal (strike-through completed tasks):
   itemTextDone: { textDecorationLine: 'line-through', color: '#94A3B8' },
-  delete: { fontSize: 20, paddingLeft: 12 },
-  empty: { textAlign: 'center', color: '#94A3B8', marginTop: 40, fontSize: 16 },
+  action: { fontSize: 18 },
+  empty: { textAlign: 'center', color: '#94A3B8', marginTop: 60, fontSize: 16 },
+  fab: {
+    position: 'absolute',
+    right: 24,
+    bottom: 36,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#4338CA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  fabText: { color: '#FFFFFF', fontSize: 32, lineHeight: 34 },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#0F172A', marginBottom: 16 },
+  modalInput: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#0F172A',
+  },
+  modalButtons: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  modalBtn: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  cancelBtn: { backgroundColor: '#F1F5F9' },
+  cancelText: { color: '#475569', fontWeight: '600', fontSize: 16 },
+  saveBtn: { backgroundColor: '#4338CA' },
+  saveText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
 });
