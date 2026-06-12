@@ -110,7 +110,7 @@ The app loads on your phone in a few seconds. 🎉
 | `'npx' is not recognized` | Same as above — npx ships with Node. Reinstall Node LTS. |
 | Stuck on a white screen or weird error on the phone | In the terminal press `r` to reload. Still stuck? Press `Ctrl+C`, then run `npx expo start -c` (clears the cache). |
 | `npm install` fails | Check your internet, then delete the `node_modules` folder and run `npm install` again. |
-| "Expo Go keeps crashing" | Update Expo Go from the app store; this workshop targets **Expo SDK 56**. |
+| "Expo Go keeps crashing" | Update Expo Go from the app store; this workshop targets **Expo SDK 54**. |
 | Totally blocked in class | Use the web fallback: open **<https://snack.expo.dev>** in your browser and code there — no install needed. |
 
 ---
