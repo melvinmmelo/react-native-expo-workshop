@@ -2,8 +2,8 @@
 
 ### A 3-session, hands-on workshop that takes complete beginners from "never coded" to "I shipped a real app on my phone."
 
-![Expo SDK](https://img.shields.io/badge/Expo-SDK%2056-000020?logo=expo&logoColor=white)
-![React Native](https://img.shields.io/badge/React%20Native-0.85-61DAFB?logo=react&logoColor=black)
+![Expo SDK](https://img.shields.io/badge/Expo-SDK%2054-000020?logo=expo&logoColor=white)
+![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react&logoColor=black)
 ![Language](https://img.shields.io/badge/Language-JavaScript-F7DF1E?logo=javascript&logoColor=black)
 ![Level](https://img.shields.io/badge/Level-Absolute%20Beginner-22C55E)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -151,10 +151,10 @@ After Session 3, students build their own **SQLite-backed CRUD app** (task manag
 
 | Tool | Version | Why |
 |---|---|---|
-| Expo SDK | **56** | Run on a phone with zero native setup |
-| React Native | 0.85.3 | The UI framework |
-| React | 19.2.3 | Components & state |
-| `expo-sqlite` | 56 | On-device SQL database for CRUD |
+| Expo SDK | **54** | Run on a phone with zero native setup |
+| React Native | 0.81.5 | The UI framework |
+| React | 19.1.0 | Components & state |
+| `expo-sqlite` | 54 | On-device SQL database for CRUD |
 | Language | **JavaScript** | Simplest path for beginners (no TypeScript) |
 | Slides | Marp | Markdown → PDF, speaker notes in the same file |
 
