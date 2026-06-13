@@ -26,14 +26,15 @@ In VS Code: **File → Open Folder…** and pick the `react-native-expo-workshop
 
 This is where you'll type commands. In VS Code: **Terminal → New Terminal** (or press `` Ctrl+` `` — the backtick key, top-left of most keyboards).
 
-A panel opens at the bottom. Check you're in the right place:
+A panel opens at the bottom — it's already pointed at your project. Type each command and press Enter:
 
 ```bash
 git checkout session-1
 npm install
 ```
 
-`npm install` downloads the app's building blocks. It can take a minute the first time — that's normal. ✅
+- `git checkout session-1` switches to **Session 1's version** of the code. You may already be on it from setup — running it again is harmless.
+- `npm install` downloads the app's building blocks. You ran this in setup too; running it again just confirms nothing is missing. It can take a minute the first time — that's normal. ✅
 
 ---
 
@@ -49,7 +50,9 @@ In the same terminal:
 npx expo start
 ```
 
-A **QR code** appears in the terminal. 🟦
+A **QR code** appears **in the terminal panel** (the black area at the bottom of VS Code — not a separate window). 🟦
+
+> 💡 `npm` *installs* building blocks; `npx` *runs* a tool (here, Expo). Different jobs — that's why you use both.
 
 ### 5. Scan it with your phone
 
@@ -89,6 +92,8 @@ Change the name to **yours**:
 **Save the file.** Look at your phone — the name changed! 🎉 That's the loop. You just programmed.
 
 > 🧩 **What is `App.js` made of?** Tags like `<Text>`, `<View>`, and `<Image>` describe *what to show*. `<Text>` shows words, `<View>` is a box that groups things, `<Image>` shows a picture. This tag-style code is called **JSX**.
+>
+> 👀 Near the top you'll also see `<ScrollView>` (a `View` you can scroll) and `<StatusBar style="light" />` (sets the color of the phone's clock/battery bar). **Leave those two alone** — they already work.
 
 ---
 
@@ -99,9 +104,11 @@ So far the name is **hard-coded** — typed directly between the tags. Real apps
 > 🔑 **The one rule to remember:** inside JSX, curly braces `{ }` mean *"run this JavaScript and drop the result right here."*
 > So `<Text>{name}</Text>` shows the **value** of `name`, while `<Text>name</Text>` just shows the word "name".
 
+> 🧩 **Why do some lines have *double* braces `{{ }}`** (like `source={{ uri: ... }}`)? The **outer** `{ }` is the JSX rule above ("run JavaScript here"). The **inner** `{ }` is a JavaScript *object*. So `{{ }}` just means "JSX braces holding an object." **Not a typo!**
+
 ### 8. ① A variable — store one thing under a name
 
-At the very **top** of `App.js`, just under the two `import` lines, add:
+At the very **top** of `App.js`, **below** the two `import` lines (and below the green `// SESSION 1 …` comment lines — green text is just notes, ignore it), add:
 
 ```jsx
 const role = 'Future Mobile Developer';
@@ -123,11 +130,11 @@ Save. The card looks the same — but now the role lives in **one place** you co
 
 One person has *many* facts: name, photo, location, school… An **object** bundles related variables under one name, using `key: value` pairs.
 
-Under your `role` variable, add:
+Under your `role` variable, add (put **your real name** as the `name` value):
 
 ```jsx
 const profile = {
-  name: 'Juan dela Cruz',
+  name: 'Your Name Here',
   photo: 'https://i.pravatar.cc/300?img=12',
   location: 'Batangas City, PH',
   school: 'University of Batangas',
@@ -137,16 +144,35 @@ const profile = {
 
 Read it out loud: *"profile has a name, a photo, a location…"* You reach inside an object with a **dot**: `profile.name`, `profile.location`.
 
-Now wire the card to the object. Replace the hard-coded values with `{profile.something}`:
+> ⚠️ **Your name moves house.** In Step 7 you typed your name straight into the card. From now on your name lives **here**, in `profile.name`. So change it in the object — not in the card. (In the next step the card will read *from* the object, which is why the name has to be correct here.)
+
+Now wire the card to read **from** the object. Make these three edits:
+
+**a) The photo.** Find this 4-line block in the card…
 
 ```jsx
-<Image style={styles.avatar} source={{ uri: profile.photo }} />
-
-<Text style={styles.name}>{profile.name}</Text>
-<Text style={styles.role}>{role}</Text>
+<Image
+  style={styles.avatar}
+  source={{ uri: 'https://i.pravatar.cc/300?img=12' }}
+/>
 ```
 
-…and the three info rows:
+…and change only the `source` line so the link comes from the object:
+
+```jsx
+<Image
+  style={styles.avatar}
+  source={{ uri: profile.photo }}
+/>
+```
+
+**b) The name.** Change the name line (the one you edited in Step 7) to:
+
+```jsx
+<Text style={styles.name}>{profile.name}</Text>
+```
+
+**c) The three info rows.** In each row, replace **only the value text on the right** — keep the labels and all the tags exactly as they are:
 
 ```jsx
 <View style={styles.infoRow}>
@@ -182,7 +208,18 @@ function makeBio(name) {
 - `return` hands back the result.
 - The backticks `` ` `` let you drop a variable inside text with `${ }` — that's a *template literal*.
 
-Now **call** the function inside the bio box (calling = running it with real input):
+Now find the bio box. Right now it holds a hard-coded sentence spread over two lines:
+
+```jsx
+<View style={styles.bioBox}>
+  <Text style={styles.bioText}>
+    👋 Hi! I'm learning to build mobile apps with React Native & Expo.
+    This entire screen is my very first app — made on my own phone!
+  </Text>
+</View>
+```
+
+**Delete that sentence** and **call** the function in its place (calling = running it with real input):
 
 ```jsx
 <View style={styles.bioBox}>
@@ -205,7 +242,9 @@ If both work, you've used variables, objects, **and** functions together. 🏆
 
 > 🔄 **Restarting from scratch later?** In the terminal press `Ctrl+C` to stop, then `npx expo start` to start again. Weird glitch? `npx expo start -c` clears the cache.
 
-### ✅ What the top of your `App.js` should look like now
+### ✅ The finished `App.js` — check yours against this
+
+Everything above the `styles` block should now look like this. (The big `StyleSheet.create({ … })` block at the bottom of the file stays **exactly as it came** — you don't change it.)
 
 ```jsx
 import { StatusBar } from 'expo-status-bar';
@@ -216,7 +255,7 @@ const role = 'Future Mobile Developer';
 
 // ② object
 const profile = {
-  name: 'Juan dela Cruz',
+  name: 'Your Name Here',
   photo: 'https://i.pravatar.cc/300?img=12',
   location: 'Batangas City, PH',
   school: 'University of Batangas',
@@ -229,8 +268,41 @@ function makeBio(name) {
 }
 
 export default function App() {
-  // …the card, using {profile.name}, {role}, {makeBio(profile.name)}, etc.
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <StatusBar style="light" />
+
+      <View style={styles.card}>
+        <Image
+          style={styles.avatar}
+          source={{ uri: profile.photo }}
+        />
+
+        <Text style={styles.name}>{profile.name}</Text>
+        <Text style={styles.role}>{role}</Text>
+
+        <View style={styles.bioBox}>
+          <Text style={styles.bioText}>{makeBio(profile.name)}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>📍 Location</Text>
+          <Text style={styles.infoValue}>{profile.location}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>🎓 School</Text>
+          <Text style={styles.infoValue}>{profile.school}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>💡 Learning</Text>
+          <Text style={styles.infoValue}>{profile.learning}</Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
 }
+
+// …the StyleSheet.create({ … }) block stays here, unchanged.
 ```
 
 ---
@@ -261,14 +333,8 @@ Next up: the [Session 1 Activity](../activities/session-1-activity.md) — make 
 
 ---
 
-## Appendix A — Create a brand-new app from scratch
+## Appendix A — Prefer to build from an empty app?
 
-Want to start with an empty app instead of the workshop one? In a terminal:
+If you'd rather create your own app from zero (instead of the workshop repo) and build the card by hand, **don't follow Part 3 here** — Parts 3–5 assume the workshop's profile-card `App.js`, which a blank app doesn't have. Use the dedicated guide instead:
 
-```bash
-npx create-expo-app@latest my-first-app --template blank
-cd my-first-app
-npx expo start
-```
-
-This makes a fresh folder `my-first-app` with its own `App.js` that just says *"Open up App.js to start working on your app!"* — then follow **Part 3** onward to edit it.
+👉 **[Build Your First App From Scratch](from-scratch-walkthrough.md)** — walks you through `create-expo-app`, then building the card and the same variables / objects / functions from an empty file.

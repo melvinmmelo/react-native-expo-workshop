@@ -18,23 +18,26 @@ Golden loop the whole way through: **edit → save → watch your phone update.*
 - **macOS:** press `Cmd+Space`, type **Terminal**, open it.
 - **Linux:** open your **Terminal** app.
 
-First, move to a folder where you keep projects, e.g.:
+Pick where your project will live. `cd` means **change directory** (move into a folder). For example, to put it inside Documents:
 
 ```bash
 cd Documents
 ```
 
+> 🆘 See `cannot find path` or `No such file or directory`? You just don't have a `Documents` folder there — **skip this command**. The app will be created wherever your terminal currently is, and that's perfectly fine.
+
 ### 2. Create a blank app
 
 ```bash
-npx create-expo-app@latest my-first-app --template blank
+npx create-expo-app@latest my-first-app --template blank@sdk-54
 ```
 
 - `my-first-app` is your project's folder name — change it if you like.
-- `--template blank` gives you the **smallest possible** starting app (no extra clutter).
+- `--template blank@sdk-54` gives you the **smallest possible** starting app, on **Expo SDK 54** — the same version the workshop uses, so it matches your Expo Go and the class repo.
 - It downloads everything and sets up the project. This takes a minute the first time. ✅
 
-> 💡 If it asks to install `create-expo-app`, say **yes** (`y`).
+> 💡 **Why pin `@sdk-54`?** Plain `--template blank` always grabs the *newest* SDK, which can be newer than the **Expo Go** app on your phone — the usual cause of *"Expo Go won't open my project."* Matching SDK 54 avoids that.
+> 💡 If it asks to install `create-expo-app`, say **yes** (`y`). If it *doesn't* ask, that's fine too — it's already cached.
 
 ---
 
@@ -44,7 +47,7 @@ npx create-expo-app@latest my-first-app --template blank
 
 Open **VS Code**, then **File → Open Folder…** and choose the **`my-first-app`** folder you just created.
 
-> ⚠️ Open the *folder*, not a single file. An app is a whole folder of files working together. On the left, the **Explorer** shows them all.
+> ⚠️ Open the *folder*, not a single file. An app is a whole folder of files working together. On the left, the **Explorer** shows them all. You'll spot `index.js`, `app.json`, `package.json`, and an `assets/` folder — **today you only ever edit `App.js`**. Ignore the rest.
 
 ### 4. Open the built-in terminal
 
@@ -56,7 +59,7 @@ In VS Code: **Terminal → New Terminal** (or press `` Ctrl+` ``). A panel opens
 npx expo start
 ```
 
-A **QR code** appears. 🟦
+A **QR code** appears **in the terminal panel** (the black area at the bottom of VS Code — not a separate window). 🟦
 
 ### 6. Scan it with your phone
 
@@ -131,7 +134,7 @@ First, add `Image` to the import line so we can use it:
 import { Image, StyleSheet, Text, View } from 'react-native';
 ```
 
-Now build the card inside the `<View>`:
+Now **replace your whole `<View>…</View>` block** (the one holding the single `<Text>` line from Step 7) with this:
 
 ```jsx
 <View style={styles.container}>
@@ -145,7 +148,7 @@ Now build the card inside the `<View>`:
 </View>
 ```
 
-Save. The image won't look right yet — it has no size. Let's fix the styles.
+Save. The image won't look right yet — it has no size, so it may disappear and the text looks tiny. **That's expected** — we fix it in the very next step. (Don't panic and start deleting things!)
 
 ### 9. Style it
 
@@ -191,6 +194,8 @@ Right now the name, photo, and role are **hard-coded** — typed straight into t
 > 🔑 **The one rule to remember:** inside JSX, curly braces `{ }` mean *"run this JavaScript and drop the result here."*
 > So `<Text>{name}</Text>` shows the **value** of `name`; `<Text>name</Text>` just shows the word "name".
 
+> 🧩 **Why does the image have *double* braces `{{ }}`** (`source={{ uri: ... }}`)? The **outer** `{ }` is the JSX rule above. The **inner** `{ }` is a JavaScript *object*. So `{{ }}` means "JSX braces holding an object" — **not a typo**.
+
 ### 🧭 First: where do variables go — inside or outside the function?
 
 You can declare a variable in **two** places, and the difference matters:
@@ -222,19 +227,27 @@ Save. Looks the same — but the role now lives in **one place** you control.
 
 ### 11. ② An object — group related values together
 
-A person has many facts. An **object** bundles them under one name with `key: value` pairs. Under your `role` line, add:
+A person has many facts. An **object** bundles them under one name with `key: value` pairs. Under your `role` line, add (put **your real name** as the `name` value):
 
 ```jsx
 const profile = {
-  name: 'Juan dela Cruz',
+  name: 'Your Name Here',
   photo: 'https://i.pravatar.cc/300?img=12',
 };
 ```
 
-Reach inside with a **dot**: `profile.name`, `profile.photo`. Now wire the card to it:
+Reach inside with a **dot**: `profile.name`, `profile.photo`. Now wire the card to read **from** the object — **edit the lines you already typed** in Step 8 (don't add new ones, or you'll see the photo/name twice):
+
+- In the `<Image>`, change the `source` line to `source={{ uri: profile.photo }}`.
+- Change the name line to `<Text style={styles.name}>{profile.name}</Text>`.
+
+So that part of the card now reads:
 
 ```jsx
-<Image style={styles.avatar} source={{ uri: profile.photo }} />
+<Image
+  style={styles.avatar}
+  source={{ uri: profile.photo }}
+/>
 <Text style={styles.name}>{profile.name}</Text>
 <Text style={styles.role}>{role}</Text>
 ```
@@ -254,7 +267,9 @@ function makeGreeting(name) {
 - `makeGreeting` is the name; `(name)` is the **input**; `return` hands back the result.
 - The backticks `` ` `` with `${ }` let you drop a variable inside text (a *template literal*).
 
-Now **call** it — add a new `<Text>` to the card:
+> ⌨️ **Find the backtick key.** It's `` ` `` — top-left of most keyboards, above `Tab`, sharing a key with `~`. It is **not** the apostrophe `'`. Using `'` here breaks the `${name}` trick.
+
+Now **call** it — add **one new line** (the `greeting` one) just below the role line:
 
 ```jsx
 <Text style={styles.name}>{profile.name}</Text>
@@ -297,7 +312,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 const role = 'Future Mobile Developer';
 
 const profile = {
-  name: 'Juan dela Cruz',
+  name: 'Your Name Here',
   photo: 'https://i.pravatar.cc/300?img=12',
 };
 
@@ -308,7 +323,10 @@ function makeGreeting(name) {
 export default function App() {
   return (
     <View style={styles.container}>
-      <Image style={styles.avatar} source={{ uri: profile.photo }} />
+      <Image
+        style={styles.avatar}
+        source={{ uri: profile.photo }}
+      />
       <Text style={styles.name}>{profile.name}</Text>
       <Text style={styles.role}>{role}</Text>
       <Text style={styles.greeting}>{makeGreeting(profile.name)}</Text>
